@@ -25,7 +25,16 @@ Overview of our proposals including refilling, refilling+, and regrouping, which
 
 ## Prerequisites
 
+Our code works with general version of PyTorch. We suggest use versions that are compatible with CUDA 10.2 since the profiling code requires CUDA 10.2. 
 
+For example: 
+```bash
+conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch-lts
+conda install matplotlib
+pip install advertorch
+```
+
+Please notice that we need `nvcc` to be installed. 
 
 ## Experiments
 
@@ -49,6 +58,14 @@ i=1
 python -u main_eval_regroup_retrain.py --data datasets/cifar10 --dataset cifar10 --arch res18 --save_dir  --pretrained resnet18_cifar10_lt_0.2_s1_rewind_16/1checkpoint.pth.tar --mask_dir resnet18_cifar10_lt_0.2_s1_rewind_16/${i}checkpoint.pth.tar --fc --prune-type lt --seed 1 --epoch 160 --decreasing_lr 80,120 --weight_decay 1e-4 --batch_size 128 --lr 0.1 
 ```
 
+
+## Profiling
+
+The code for profiling is under `profile`. 
+
+To calculate the time of regroup conv, `cd profile/regroup_conv` and `python split.py <checkpoint> <dir_to_save>`. For each extracted sparse mask, run `python conv.py --kernel_file <sparse_mask_checkpoint>`. 
+
+To calculate the time of cudnn conv, `cd profile/cudnn_conv` and run `python conv.py --kernel_file <sparse_mask_checkpoint>`. 
 
 
 ## Aknowledgement
