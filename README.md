@@ -1,7 +1,7 @@
-# Lottery Tickets can have Structural Sparsity
+# Coarsening the Granularity: Towards Structurally Sparse Lottery Tickets
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-Code for the paper: [Lottery Tickets can have Structural Sparsity](https://openreview.net/pdf?id=oZe7Zdia1H5)
+Code for the paper: [Coarsening the Granularity: Towards Structurally Sparse Lottery Tickets](https://openreview.net/pdf?id=oZe7Zdia1H5)
 
 Tianlong Chen, Xuxi Chen, Xiaolong Ma, Yanzhi Wang, Zhangyang Wang
 
