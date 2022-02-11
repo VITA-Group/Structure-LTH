@@ -1,7 +1,7 @@
 # Coarsening the Granularity: Towards Structurally Sparse Lottery Tickets
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-Code for the paper: [Coarsening the Granularity: Towards Structurally Sparse Lottery Tickets]()
+Code for the paper: [Coarsening the Granularity: Towards Structurally Sparse Lottery Tickets](http://arxiv.org/abs/2202.04736)
 
 Tianlong Chen, Xuxi Chen, Xiaolong Ma, Yanzhi Wang, Zhangyang Wang
 
@@ -11,7 +11,7 @@ In this paper, we demonstrate the first positive result that a structurally spar
 
 Specifically, we first “re-fill” pruned elements back in some channels deemed to be important, and then “re-group” non-zero elements to create flexible group-wise structural patterns. Both our identified channel- and group-wise structural subnetworks win the lottery, with substantial inference speedups readily supported by practical hardware. 
 
-Extensive experiments, conducted on diverse datasets across multiple network backbones, consistently validate our proposal, showing that the hardware acceleration roadblock of LTH is now removed. Detailed results are referred to our [paper](). 
+Extensive experiments, conducted on diverse datasets across multiple network backbones, consistently validate our proposal, showing that the hardware acceleration roadblock of LTH is now removed. Detailed results are referred to our [paper](http://arxiv.org/abs/2202.04736). 
 
 
 
