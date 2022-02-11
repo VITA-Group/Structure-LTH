@@ -77,7 +77,14 @@ Many thanks Prof. Jiang from [paper](https://doi.org/10.1145/3410463.3414648) fo
 ## Citation
 
 ```
-TBD
+@misc{chen2022coarsening,
+      title={Coarsening the Granularity: Towards Structurally Sparse Lottery Tickets}, 
+      author={Tianlong Chen and Xuxi Chen and Xiaolong Ma and Yanzhi Wang and Zhangyang Wang},
+      year={2022},
+      eprint={2202.04736},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
 
 @inproceedings{Rumi2020acc,
 author = {Rumi, Masuma Akter and Ma, Xiaolong and Wang, Yanzhi and Jiang, Peng},
