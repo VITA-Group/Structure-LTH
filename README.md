@@ -87,19 +87,19 @@ Many thanks Prof. Jiang from [paper](https://doi.org/10.1145/3410463.3414648) fo
 }
 
 @inproceedings{Rumi2020acc,
-author = {Rumi, Masuma Akter and Ma, Xiaolong and Wang, Yanzhi and Jiang, Peng},
-title = {Accelerating Sparse CNN Inference on GPUs with Performance-Aware Weight Pruning},
-year = {2020},
-isbn = {9781450380751},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3410463.3414648},
-doi = {10.1145/3410463.3414648},
-booktitle = {Proceedings of the ACM International Conference on Parallel Architectures and Compilation Techniques},
-pages = {267–278},
-numpages = {12},
-keywords = {cnn pruning, sparse convolution, gpus},
-location = {Virtual Event, GA, USA},
-series = {PACT '20}
+      author = {Rumi, Masuma Akter and Ma, Xiaolong and Wang, Yanzhi and Jiang, Peng},
+      title = {Accelerating Sparse CNN Inference on GPUs with Performance-Aware Weight Pruning},
+      year = {2020},
+      isbn = {9781450380751},
+      publisher = {Association for Computing Machinery},
+      address = {New York, NY, USA},
+      url = {https://doi.org/10.1145/3410463.3414648},
+      doi = {10.1145/3410463.3414648},
+      booktitle = {Proceedings of the ACM International Conference on Parallel Architectures and Compilation Techniques},
+      pages = {267–278},
+      numpages = {12},
+      keywords = {cnn pruning, sparse convolution, gpus},
+      location = {Virtual Event, GA, USA},
+      series = {PACT '20}
 }
 ```
