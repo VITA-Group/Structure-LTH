@@ -29,9 +29,14 @@ Our code works with general version of PyTorch. We suggest use versions that are
 
 For example: 
 ```bash
+conda create -n structlth python=3.8
 conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch-lts
 conda install matplotlib
-pip install advertorch
+pip install advertorch tqdm
+```
+or 
+```
+conda env create -f environment.yml
 ```
 
 Please notice that we need `nvcc` to be installed. 
@@ -66,6 +71,9 @@ The code for profiling is under `profile`.
 To calculate the time of regroup conv, `cd profile/regroup_conv` and `python split.py <checkpoint> <dir_to_save>`. For each extracted sparse mask, run `python conv.py --kernel_file <sparse_mask_checkpoint>`. 
 
 To calculate the time of cudnn conv, `cd profile/cudnn_conv` and run `python conv.py --kernel_file <sparse_mask_checkpoint>`. 
+
+## Todo
+- [] Upgrade codes to support CUDA 11.x. 
 
 
 ## Aknowledgement
