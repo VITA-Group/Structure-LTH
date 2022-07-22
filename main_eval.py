@@ -5,27 +5,18 @@ support datasets: cifar10, Fashionmnist, cifar100
 
 import os
 import time 
-import random
-import shutil
 import argparse
-import numpy as np  
-from copy import deepcopy
+import numpy as np 
 import matplotlib.pyplot as plt
 
 import torch
 import torch.optim
 import torch.nn as nn
 import torch.utils.data
-import torch.nn.functional as F
-import torchvision.models as models
-import torch.backends.cudnn as cudnn
-import torchvision.transforms as transforms
-import torchvision.datasets as datasets
-from torch.utils.data.sampler import SubsetRandomSampler
-from advertorch.utils import NormalizeByChannelMeanStd
 
 from utils import *
 from pruning_utils import *
+from model_utils import accuracy, setup_seed, warmup_lr, AverageMeter, save_checkpoint
 
 parser = argparse.ArgumentParser(description='PyTorch Evaluation Tickets')
 
@@ -243,11 +234,6 @@ def validate(val_loader, model, criterion):
 
     return top1.avg
 
-def save_checkpoint(state, is_SA_best, save_path, filename='checkpoint.pth.tar'):
-    filepath = os.path.join(save_path, filename)
-    torch.save(state, filepath)
-    if is_SA_best:
-        shutil.copyfile(filepath, os.path.join(save_path, 'model_SA_best.pth.tar'))
 
 def load_ticket(model, args):
 
@@ -304,55 +290,7 @@ def load_ticket(model, args):
 
         check_sparsity(model)
 
-def warmup_lr(epoch, step, optimizer, one_epoch_step):
 
-    overall_steps = args.warmup*one_epoch_step
-    current_steps = epoch*one_epoch_step + step 
-
-    lr = args.lr * current_steps/overall_steps
-    lr = min(lr, args.lr)
-
-    for p in optimizer.param_groups:
-        p['lr']=lr
-
-class AverageMeter(object):
-    """Computes and stores the average and current value"""
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
-
-def accuracy(output, target, topk=(1,)):
-    """Computes the precision@k for the specified values of k"""
-    maxk = max(topk)
-    batch_size = target.size(0)
-
-    _, pred = output.topk(maxk, 1, True, True)
-    pred = pred.t()
-    correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-    res = []
-    for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0)
-        res.append(correct_k.mul_(100.0 / batch_size))
-    return res
-
-def setup_seed(seed): 
-    torch.manual_seed(seed) 
-    torch.cuda.manual_seed_all(seed) 
-    np.random.seed(seed) 
-    random.seed(seed) 
-    torch.backends.cudnn.deterministic = True 
 
 if __name__ == '__main__':
     main()

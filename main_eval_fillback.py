@@ -5,7 +5,7 @@ support datasets: cifar10, Fashionmnist, cifar100
 
 import os
 import time 
-import random
+
 import shutil
 import argparse
 import numpy as np  
@@ -16,18 +16,13 @@ import torch
 import torch.optim
 import torch.nn as nn
 import torch.utils.data
-import torch.nn.functional as F
-import torchvision.models as models
-import torch.backends.cudnn as cudnn
-import torchvision.transforms as transforms
-import torchvision.datasets as datasets
-from torch.utils.data.sampler import SubsetRandomSampler
-from advertorch.utils import NormalizeByChannelMeanStd
 
 from utils import *
 from pruning_utils_2 import *
-from pruning_utils_unprune import *
+# from pruning_utils_unprune import *
 from pruning_utils import prune_model_custom_fillback
+from model_utils import accuracy, setup_seed, warmup_lr, AverageMeter, save_checkpoint
+
 parser = argparse.ArgumentParser(description='PyTorch Evaluation Tickets')
 
 ##################################### general setting #################################################
@@ -118,7 +113,7 @@ def main():
         print(tacc)
         print(test_tacc)
         return
-    #loading tickets
+
     model.cuda()
 
     load_ticket(model, args, train_loader=train_loader)
@@ -188,6 +183,7 @@ def main():
     check_sparsity(model, conv1=args.conv1)
     print('* best SA={}'.format(all_result['test_ta'][np.argmax(np.array(all_result['ta']))]))
 
+
 def train(train_loader, model, criterion, optimizer, epoch):
     
     losses = AverageMeter()
@@ -234,10 +230,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
     return top1.avg
 
+
 def validate(val_loader, model, criterion):
-    """
-    Run evaluation
-    """
+    """Run evaluation."""
     losses = AverageMeter()
     top1 = AverageMeter()
 
@@ -273,11 +268,6 @@ def validate(val_loader, model, criterion):
 
     return top1.avg
 
-def save_checkpoint(state, is_SA_best, save_path, filename='checkpoint.pth.tar'):
-    filepath = os.path.join(save_path, filename)
-    torch.save(state, filepath)
-    if is_SA_best:
-        shutil.copyfile(filepath, os.path.join(save_path, 'model_SA_best.pth.tar'))
 
 def load_ticket(model, args, train_loader=None):
     # weight 
@@ -311,8 +301,6 @@ def load_ticket(model, args, train_loader=None):
         print('*number of loading weight={}'.format(len(loading_weight.keys())))
         print('*number of model weight={}'.format(len(model.state_dict().keys())))
         model.load_state_dict(loading_weight)
-        
-
 
     # mask 
     if args.mask_dir:
@@ -332,59 +320,8 @@ def load_ticket(model, args, train_loader=None):
         prune_model_custom_fillback(model, current_mask, criteria=args.criterion, train_loader=train_loader, init_weight = checkpoint['init_weight'], trained_weight = copy.deepcopy(checkpoint['state_dict']), fillback_rate=args.fillback_rate)
         end = time.time()
         print(end - start)
-        assert False
-        #prune_random_betweeness(model, current_mask, int(args.num_paths), downsample=downsample, conv1=args.conv1)
         check_sparsity(model, conv1=args.conv1)
 
-def warmup_lr(epoch, step, optimizer, one_epoch_step):
-
-    overall_steps = args.warmup*one_epoch_step
-    current_steps = epoch*one_epoch_step + step 
-
-    lr = args.lr * current_steps/overall_steps
-    lr = min(lr, args.lr)
-
-    for p in optimizer.param_groups:
-        p['lr']=lr
-
-class AverageMeter(object):
-    """Computes and stores the average and current value"""
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
-
-def accuracy(output, target, topk=(1,)):
-    """Computes the precision@k for the specified values of k"""
-    maxk = max(topk)
-    batch_size = target.size(0)
-
-    _, pred = output.topk(maxk, 1, True, True)
-    pred = pred.t()
-    correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-    res = []
-    for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0)
-        res.append(correct_k.mul_(100.0 / batch_size))
-    return res
-
-def setup_seed(seed): 
-    torch.manual_seed(seed) 
-    torch.cuda.manual_seed_all(seed) 
-    np.random.seed(seed) 
-    random.seed(seed) 
-    torch.backends.cudnn.deterministic = True 
 
 if __name__ == '__main__':
     main()

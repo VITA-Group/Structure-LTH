@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
 from collections import OrderedDict
-from torchvision.models.utils import load_state_dict_from_url
+from torch.utils.model_zoo import load_url as load_state_dict_from_url
 from advertorch.utils import NormalizeByChannelMeanStd
 from torch import Tensor
 from torch.jit.annotations import List
