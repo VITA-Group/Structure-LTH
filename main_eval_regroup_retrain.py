@@ -20,7 +20,6 @@ import torch.utils.data
 from utils import *
 from pruning_utils import regroup
 from pruning_utils_2 import *
-from pruning_utils import prune_model_custom_fillback
 from model_utils import accuracy, setup_seed, warmup_lr, AverageMeter, save_checkpoint
 parser = argparse.ArgumentParser(description='PyTorch Evaluation Tickets')
 

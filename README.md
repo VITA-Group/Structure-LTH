@@ -68,7 +68,7 @@ python -u main_eval_fillback.py --data datasets/cifar10 --dataset cifar10 --arch
 
 ```bash
 i=1
-python -u main_eval_regroup_retrain.py --data datasets/cifar10 --dataset cifar10 --arch res18 --save_dir  --pretrained resnet18_cifar10_lt_0.2_s1_rewind_16/1checkpoint.pth.tar --mask_dir resnet18_cifar10_lt_0.2_s1_rewind_16/${i}checkpoint.pth.tar --fc --prune-type lt --seed 1 --epoch 160 --decreasing_lr 80,120 --weight_decay 1e-4 --batch_size 128 --lr 0.1 
+python -u main_eval_regroup_retrain.py --data datasets/cifar10 --dataset cifar10 --arch res18 --pretrained resnet18_cifar10_lt_0.2_s1_rewind_16/1checkpoint.pth.tar --mask_dir resnet18_cifar10_lt_0.2_s1_rewind_16/${i}checkpoint.pth.tar --fc --prune-type lt --seed 1 --epoch 160 --decreasing_lr 80,120 --weight_decay 1e-4 --batch_size 128 --lr 0.1 --save_dir regroup
 ```
 
 ## Profiling
@@ -81,7 +81,7 @@ To calculate the time of cudnn conv, `cd profile/cudnn_conv` and run `python con
 
 ## Todo
 
-- [ ] Checkpoints 
+- [ ] Checkpoints
 - [ ] Upgrade codes to support CUDA 11.x.
 
 ## Aknowledgement

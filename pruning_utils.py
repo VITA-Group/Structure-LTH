@@ -411,7 +411,7 @@ def regroup(sparse_kernel, t1 = 1.5, nn = 32, B2 = 16, cn = 8):
 
     tmp.close()
     
-    os.system(f'./shmetis {tempname} {cn} 10')
+    os.system(f'./profile/regroup_conv/shmetis {tempname} {cn} 10')
     from glob import glob
     file_to_find = glob(f'{tempname}.part.*')
     try:
