@@ -21,20 +21,21 @@ Overview of our proposals including refilling, refilling+, and regrouping, which
 
 ![](Figs/Methods.png)
 
-
-
 ## Prerequisites
 
-Our code works with general version of PyTorch. We suggest use versions that are compatible with CUDA 10.2 since the profiling code requires CUDA 10.2. 
+Our code works with general version of PyTorch. We suggest use versions that are compatible with CUDA 10.2 since the profiling code requires CUDA 10.2.
 
-For example: 
+For example:
+
 ```bash
 conda create -n structlth python=3.8
 conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch-lts
 conda install matplotlib
 pip install advertorch tqdm
 ```
+
 or 
+
 ```
 conda env create -f environment.yml
 ```
@@ -43,44 +44,45 @@ Please notice that we need `nvcc` to be installed.
 
 ## Experiments
 
-### Finding Lottery Tickets with IMP
+### Checkpoints
+
+The relevant files / checkpoints can be found in [this folder](https://www.dropbox.com/sh/0j9p3hfbmm9wn3r/AABi3hI_2esiw40JsKaX1teka?dl=0).
+
+### Finding Lottery Tickets with IMP (ResNet-18)
 
 ```bash
 python -u main_imp.py --data datasets/cifar10 --dataset cifar10 --arch res18 --save_dir resnet18_cifar10_lt_0.2_s1_rewind_16 --init pretrained_model/res18_cifar10_1_init.pth.tar --seed 1 --lr 0.1 --fc --rate 0.2 --pruning_times 10 --prune_type rewind_lt --epoch 160 --decreasing_lr 80,120 --rewind_epoch 16 --weight_decay 1e-4 --batch_size 128
 ```
 
-### Retrain Networks with Refill
+### Retrain Networks with Refill (ResNet-18)
 
 ```bash
-i=1
+i=1 # Take 1 as an example
 python -u main_eval_fillback.py --data datasets/cifar10 --dataset cifar10 --arch res18 --save_dir  --pretrained resnet18_cifar10_lt_0.2_s1_rewind_16/1checkpoint.pth.tar --mask_dir resnet18_cifar10_lt_0.2_s1_rewind_16/${i}checkpoint.pth.tar --fc --prune-type lt --seed 1 --epoch 160 --decreasing_lr 80,120 --weight_decay 1e-4 --batch_size 128 --lr 0.1 
 ```
 
-### Retrain Networks with Regroup
+### Retrain Networks with Regroup (ResNet-18)
 
 ```bash
 i=1
 python -u main_eval_regroup_retrain.py --data datasets/cifar10 --dataset cifar10 --arch res18 --save_dir  --pretrained resnet18_cifar10_lt_0.2_s1_rewind_16/1checkpoint.pth.tar --mask_dir resnet18_cifar10_lt_0.2_s1_rewind_16/${i}checkpoint.pth.tar --fc --prune-type lt --seed 1 --epoch 160 --decreasing_lr 80,120 --weight_decay 1e-4 --batch_size 128 --lr 0.1 
 ```
 
-
 ## Profiling
 
-The code for profiling is under `profile`. 
+The code for profiling is under `profile`.
 
 To calculate the time of regroup conv, `cd profile/regroup_conv` and `python split.py <checkpoint> <dir_to_save>`. For each extracted sparse mask, run `python conv.py --kernel_file <sparse_mask_checkpoint>`. 
 
 To calculate the time of cudnn conv, `cd profile/cudnn_conv` and run `python conv.py --kernel_file <sparse_mask_checkpoint>`. 
 
 ## Todo
-- [] Upgrade codes to support CUDA 11.x. 
-
+- [] Upgrade codes to support CUDA 11.x.
+- [] Update commands for other experiments. 
 
 ## Aknowledgement
 
 Many thanks Prof. Jiang from [paper](https://doi.org/10.1145/3410463.3414648) for providing implementations of acceleration and helpful discussions!
-
-
 
 ## Citation
 
