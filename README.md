@@ -1,4 +1,5 @@
 # Coarsening the Granularity: Towards Structurally Sparse Lottery Tickets
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 Code for the paper: [Coarsening the Granularity: Towards Structurally Sparse Lottery Tickets](http://arxiv.org/abs/2202.04736)
@@ -7,19 +8,17 @@ Tianlong Chen, Xuxi Chen, Xiaolong Ma, Yanzhi Wang, Zhangyang Wang
 
 ## Overview
 
-In this paper, we demonstrate the first positive result that a structurally sparse winning ticket can be effectively found in general. The core idea is to append “post-processing techniques” after each round of (unstructured) IMP, to enforce the formation of structural sparsity. 
+In this paper, we demonstrate the first positive result that a structurally sparse winning ticket can be effectively found in general. The core idea is to append “post-processing techniques” after each round of (unstructured) IMP, to enforce the formation of structural sparsity.
 
-Specifically, we first “re-fill” pruned elements back in some channels deemed to be important, and then “re-group” non-zero elements to create flexible group-wise structural patterns. Both our identified channel- and group-wise structural subnetworks win the lottery, with substantial inference speedups readily supported by practical hardware. 
+Specifically, we first “re-fill” pruned elements back in some channels deemed to be important, and then “re-group” non-zero elements to create flexible group-wise structural patterns. Both our identified channel- and group-wise structural subnetworks win the lottery, with substantial inference speedups readily supported by practical hardware.
 
-Extensive experiments, conducted on diverse datasets across multiple network backbones, consistently validate our proposal, showing that the hardware acceleration roadblock of LTH is now removed. Detailed results are referred to our [paper](http://arxiv.org/abs/2202.04736). 
-
-
+Extensive experiments, conducted on diverse datasets across multiple network backbones, consistently validate our proposal, showing that the hardware acceleration roadblock of LTH is now removed. Detailed results are referred to our [paper](http://arxiv.org/abs/2202.04736).
 
 ## Method
 
 Overview of our proposals including refilling, refilling+, and regrouping, which turn unstructured sparse mask into channel-wise and group-wise structured sparse masks.
 
-![](Figs/Methods.png)
+![Methods](Figs/Methods.png)
 
 ## Prerequisites
 
@@ -34,13 +33,17 @@ conda install matplotlib
 pip install advertorch tqdm
 ```
 
-or 
+or
 
-```
+```bash
 conda env create -f environment.yml
 ```
 
-Please notice that we need `nvcc` to be installed. 
+Please notice that we need `nvcc` to be installed.
+
+### Data Preparation
+
+Most of the datasets will be downloaded automatically. To download the Tiny-ImageNet, please refer to [this link](https://gist.github.com/moskomule/2e6a9a463f50447beca4e64ab4699ac4).
 
 ## Experiments
 
@@ -72,13 +75,14 @@ python -u main_eval_regroup_retrain.py --data datasets/cifar10 --dataset cifar10
 
 The code for profiling is under `profile`.
 
-To calculate the time of regroup conv, `cd profile/regroup_conv` and `python split.py <checkpoint> <dir_to_save>`. For each extracted sparse mask, run `python conv.py --kernel_file <sparse_mask_checkpoint>`. 
+To calculate the time of regroup conv, `cd profile/regroup_conv` and `python split.py <checkpoint> <dir_to_save>`. For each extracted sparse mask, run `python conv.py --kernel_file <sparse_mask_checkpoint>`.
 
-To calculate the time of cudnn conv, `cd profile/cudnn_conv` and run `python conv.py --kernel_file <sparse_mask_checkpoint>`. 
+To calculate the time of cudnn conv, `cd profile/cudnn_conv` and run `python conv.py --kernel_file <sparse_mask_checkpoint>`.
 
 ## Todo
+
 - [] Upgrade codes to support CUDA 11.x.
-- [] Update commands for other experiments. 
+- [] Update commands for other experiments.
 
 ## Aknowledgement
 
@@ -86,7 +90,7 @@ Many thanks Prof. Jiang from [paper](https://doi.org/10.1145/3410463.3414648) fo
 
 ## Citation
 
-```
+```latex
 @misc{chen2022coarsening,
       title={Coarsening the Granularity: Towards Structurally Sparse Lottery Tickets}, 
       author={Tianlong Chen and Xuxi Chen and Xiaolong Ma and Yanzhi Wang and Zhangyang Wang},

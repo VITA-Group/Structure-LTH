@@ -12,7 +12,7 @@ from models.resnet12 import resnet12
 from advertorch.utils import NormalizeByChannelMeanStd
 from dataset import *
 from models.vgg import vgg16_bn
-from models.resnet_grasp import resnet32
+from models.resnet_grasp import resnet32 as wrn32
 
 def setup_model_dataset(args):
     trigger_set_dataloader = None
@@ -119,8 +119,8 @@ def setup_model_dataset(args):
     elif args.arch == 'resnet12':
         print('build model: resnet12')
         model = resnet12(num_classes=classes)
-    elif args.arch == 'resnet32_grasp':
-        model = resnet32(dataset=args.dataset)
+    elif args.arch == 'wrn32':
+        model = wrn32(dataset=args.dataset)
 
     else:
         raise ValueError('unknow model')
