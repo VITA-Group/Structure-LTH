@@ -30,7 +30,7 @@ For example:
 conda create -n structlth python=3.8
 conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch-lts
 conda install matplotlib
-pip install advertorch tqdm
+pip install advertorch tqdm networkx
 ```
 
 or
@@ -61,14 +61,14 @@ python -u main_imp.py --data datasets/cifar10 --dataset cifar10 --arch res18 --s
 
 ```bash
 i=1 # Take 1 as an example
-python -u main_eval_fillback.py --data datasets/cifar10 --dataset cifar10 --arch res18 --save_dir  --pretrained resnet18_cifar10_lt_0.2_s1_rewind_16/1checkpoint.pth.tar --mask_dir resnet18_cifar10_lt_0.2_s1_rewind_16/${i}checkpoint.pth.tar --fc --prune-type lt --seed 1 --epoch 160 --decreasing_lr 80,120 --weight_decay 1e-4 --batch_size 128 --lr 0.1 
+python -u main_eval_fillback.py --data datasets/cifar10 --dataset cifar10 --arch res18 --save_dir output --pretrained resnet18_cifar10_lt_0.2_s1_rewind_16/1checkpoint.pth.tar --mask_dir resnet18_cifar10_lt_0.2_s1_rewind_16/${i}checkpoint.pth.tar --fc --prune-type lt --seed 1 --epoch 160 --decreasing_lr 80,120 --weight_decay 1e-4 --batch_size 128 --lr 0.1 
 ```
 
 ### Retrain Networks with Regroup (ResNet-18)
 
 ```bash
 i=1
-python -u main_eval_regroup_retrain.py --data datasets/cifar10 --dataset cifar10 --arch res18 --save_dir  --pretrained resnet18_cifar10_lt_0.2_s1_rewind_16/1checkpoint.pth.tar --mask_dir resnet18_cifar10_lt_0.2_s1_rewind_16/${i}checkpoint.pth.tar --fc --prune-type lt --seed 1 --epoch 160 --decreasing_lr 80,120 --weight_decay 1e-4 --batch_size 128 --lr 0.1 
+python -u main_eval_regroup.py --data datasets/cifar10 --dataset cifar10 --arch res18 --save_dir output --pretrained resnet18_cifar10_lt_0.2_s1_rewind_16/1checkpoint.pth.tar --mask_dir resnet18_cifar10_lt_0.2_s1_rewind_16/${i}checkpoint.pth.tar --fc --prune-type lt --seed 1 --epoch 160 --decreasing_lr 80,120 --weight_decay 1e-4 --batch_size 128 --lr 0.1 
 ```
 
 ## Profiling

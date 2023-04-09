@@ -7,13 +7,10 @@ import ctypes
 import uuid
 from tqdm import tqdm
 
-from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
-from torch.nn.modules.utils import _single, _pair, _triple, _reverse_repeat_tuple
-
 import time
 
 
-
+import pickle
 nn = 32
 
 class SparseConv2D(torch.nn.Module):
@@ -42,7 +39,7 @@ class SparseConv2D(torch.nn.Module):
     cn = 8
     ncols = sparse_kernel.shape[1]
 
-    print((sparse_kernel.abs() > 0).sum() / sparse_kernel.numel())
+    print((sparse_kernel.abs() > 0).sum().float() / sparse_kernel.numel())
     nonempty_rows = []
     for i in range(nrows):
       for j in range(ncols):
@@ -144,7 +141,7 @@ class SparseConv2D(torch.nn.Module):
       return [(list(range(nrows)), list(range(ncols)))]
       #return []
 
-  def __init__(self, in_channels: int, out_channels: int, kernel_size: _size_2_t, stride: _size_2_t  = 1, padding: _size_2_t = 0, dilation: _size_2_t = 1, bias: bool = False):
+  def __init__(self, in_channels: int, out_channels: int, kernel_size, stride=1, padding=0, dilation=1, bias: bool = False, identifier=None, reuse=False):
     super(SparseConv2D, self).__init__()
     self.in_channels = in_channels
     self.out_channels = out_channels
@@ -153,8 +150,8 @@ class SparseConv2D(torch.nn.Module):
     self.padding = padding
     self.dilation = dilation
     self.bias = bias
-
-  
+    self.identifier = uuid.uuid1() if identifier is None else identifier
+    self.reuse = reuse
   def load(self, sparse_weight, bias):
 
     kernel_shape = sparse_weight.shape
@@ -188,7 +185,11 @@ class SparseConv2D(torch.nn.Module):
 
     sparse_weight = sparse_weight.view(kernel_shape[0], kernel_shape[1] * kernel_shape[2] * kernel_shape[3])
 
-    blocks = self.extract_dense(sparse_weight)
+    if not self.reuse:
+      blocks = self.extract_dense(sparse_weight)
+      pickle.dump(blocks, open(f'.tmp/{self.identifier}.block', 'wb'))
+    else:
+      blocks = pickle.load(open(f'.tmp/{self.identifier}.block', 'rb'))
 
     for b in blocks:
       kernel_ptr.append(len(kernel_offset))
@@ -197,9 +198,7 @@ class SparseConv2D(torch.nn.Module):
         kernel_value.extend(sparse_weight[r,b[1]].tolist())
         kernel_ptr.append(len(kernel_offset))
         kernel_map.append(r)
-        for c in b[1]:
-          if (sparse_weight[r,c] != 0):
-            sparse_weight[r, c] = 0
+        sparse_weight[r, b[1]] = 0
               
       kernel_map.append(-1)
       assert (len(kernel_ptr) == len(kernel_map))
@@ -277,7 +276,7 @@ class SparseConv2D(torch.nn.Module):
     output_width = tmp // horizontal_stride + 1
 
     output_channels = self.out_channels
-    if self._lib == None:
+    if self._lib == None and not self.reuse:
       f = open('spmm_conv_n.cu', 'r')
       code_n = f.read()
       f.close()
@@ -322,13 +321,23 @@ class SparseConv2D(torch.nn.Module):
         call_kernel += f'cudaStreamCreate(&stream_sparse);\ndim3 nblocks_sparse({output_width*output_height*sparse_kernel_size//2}, {batch_size // 64});\ndim3 nthreads_sparse(32, 2);\n_spmm_conv_sparse<<<nblocks_sparse, nthreads_sparse, 0, stream_sparse>>>(input_data, output_data, kernel_ptr_sparse, kernel_map_sparse, kernel_offset, kernel_data);\n'
       code = code_template.replace('_CODE_KERNEL', code_kernel).replace('_CODE_N', code_kernel).replace('_CALL_KERNEL', call_kernel).replace('_DECL_STREAM', code_stream_decl)
 
-      timestamp = uuid.uuid1()
-      self.filename = f'.tmp/tmp_{timestamp}'
+      cleanup = ""
+      for i in range(len(self.block_ptr)-1):
+        block_kernel_size = self.block_ptr[i+1] - self.block_ptr[i] - 1
+        block_kernel_size = block_kernel_size.item()
+        if block_kernel_size  < 1:
+          continue
+        cleanup += f"cudaStreamDestroy(stream_{i});\n"
+      if len(self.kernel_ptr_sparse) > 1 and len(self.block_ptr) == 1:
+        cleanup += "cudaStreamDestroy(stream_sparse);\n"
+
+      code = code.replace("_CLEAN_UP", cleanup)
+      self.filename = f'.tmp/{self.identifier}'
 
       with open(self.filename+'.cu', 'w') as fw:
         fw.write(code)
       
-      os.system(f'nvcc -arch=sm_52  -gencode=arch=compute_52,code=sm_52  -gencode=arch=compute_60,code=sm_60  -gencode=arch=compute_61,code=sm_61 -gencode=arch=compute_70,code=sm_70  -gencode=arch=compute_75,code=sm_75 -gencode=arch=compute_80,code=sm_80 -gencode=arch=compute_80,code=compute_80 -Xptxas "-v -dlcm=ca" -shared -Xcompiler=\"-fPIC\" -o {self.filename}.so {self.filename}.cu')
+      os.system(f'/usr/local/cuda-10.2/bin/nvcc -gencode=arch=compute_60,code=sm_60  -gencode=arch=compute_61,code=sm_61 -gencode=arch=compute_70,code=sm_70  -gencode=arch=compute_75,code=sm_75 -O2 -Xptxas "-v -dlcm=ca" -shared -Xcompiler=\"-fPIC\" -o {self.filename}.so {self.filename}.cu')
 
       self.kernel_ptr = self.kernel_ptr.cuda()
       self.kernel_map = self.kernel_map.cuda()
@@ -340,16 +349,21 @@ class SparseConv2D(torch.nn.Module):
       self._lib = ctypes.CDLL(self.filename+'.so')
       self._lib.spmm_conv.restype = None
       self._lib.spmm_conv.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+    elif self.reuse:
+      self.filename = f'.tmp/{self.identifier}'
+      self.kernel_ptr = self.kernel_ptr.cuda()
+      self.kernel_map = self.kernel_map.cuda()
+      self.kernel_offset = self.kernel_offset.cuda()
+      self.kernel_value = self.kernel_value.cuda()
+      self.kernel_ptr_sparse = self.kernel_ptr_sparse.cuda()
+      self.kernel_map_sparse = self.kernel_map_sparse.cuda()
 
+      self._lib = ctypes.CDLL(self.filename+'.so')
+      self._lib.spmm_conv.restype = None
+      self._lib.spmm_conv.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
     output = torch.zeros(output_height, output_width, output_channels, batch_size).cuda()
-    print(output.mean())
-    print(output.std())
-
-    #_libdir = os.path.dirname(os.path.realpath(__file__))
-    
-
     self._lib.spmm_conv(ctypes.c_void_p(input.data_ptr()), ctypes.c_void_p(output.data_ptr()), ctypes.c_void_p(self.kernel_ptr.data_ptr()), ctypes.c_void_p(self.kernel_map.data_ptr()),  ctypes.c_void_p(self.kernel_offset.data_ptr()), ctypes.c_void_p(self.kernel_value.data_ptr()), ctypes.c_void_p(self.kernel_ptr_sparse.data_ptr()), ctypes.c_void_p(self.kernel_map_sparse.data_ptr()))
-
-    print(output.mean())
-    print(output.std())
-    return output.transpose(0, 1).transpose(0, 3).transpose(1, 2)
+    del input
+    a = output.transpose(0, 1).transpose(0, 3).transpose(1, 2).clone()
+    del output
+    return a
