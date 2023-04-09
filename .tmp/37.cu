@@ -23,7 +23,7 @@ void _spmm_conv_0(const float * __restrict__ input_data, float *output_data, con
 
 
 	int i = (threadIdx.y * 32) + blockIdx.x * (32 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -36,7 +36,7 @@ void _spmm_conv_0(const float * __restrict__ input_data, float *output_data, con
 	int output_x = i / (2 * 96);
 	int output_y = i /96 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[32<<1];
 #pragma unroll
@@ -55,7 +55,7 @@ void _spmm_conv_0(const float * __restrict__ input_data, float *output_data, con
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<32; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -128,7 +128,7 @@ void _spmm_conv_0(const float * __restrict__ input_data, float *output_data, con
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<32; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -197,13 +197,12 @@ void _spmm_conv_0(const float * __restrict__ input_data, float *output_data, con
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<32; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -212,7 +211,7 @@ void _spmm_conv_1(const float * __restrict__ input_data, float *output_data, con
 
 
 	int i = (threadIdx.y * 11) + blockIdx.x * (11 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -225,7 +224,7 @@ void _spmm_conv_1(const float * __restrict__ input_data, float *output_data, con
 	int output_x = i / (2 * 11);
 	int output_y = i /11 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[11<<1];
 #pragma unroll
@@ -244,7 +243,7 @@ void _spmm_conv_1(const float * __restrict__ input_data, float *output_data, con
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<11; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -317,7 +316,7 @@ void _spmm_conv_1(const float * __restrict__ input_data, float *output_data, con
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<11; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -386,13 +385,12 @@ void _spmm_conv_1(const float * __restrict__ input_data, float *output_data, con
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<11; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -401,7 +399,7 @@ void _spmm_conv_2(const float * __restrict__ input_data, float *output_data, con
 
 
 	int i = (threadIdx.y * 32) + blockIdx.x * (32 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -414,7 +412,7 @@ void _spmm_conv_2(const float * __restrict__ input_data, float *output_data, con
 	int output_x = i / (2 * 96);
 	int output_y = i /96 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[32<<1];
 #pragma unroll
@@ -433,7 +431,7 @@ void _spmm_conv_2(const float * __restrict__ input_data, float *output_data, con
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<32; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -506,7 +504,7 @@ void _spmm_conv_2(const float * __restrict__ input_data, float *output_data, con
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<32; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -575,13 +573,12 @@ void _spmm_conv_2(const float * __restrict__ input_data, float *output_data, con
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<32; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -590,7 +587,7 @@ void _spmm_conv_3(const float * __restrict__ input_data, float *output_data, con
 
 
 	int i = (threadIdx.y * 11) + blockIdx.x * (11 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -603,7 +600,7 @@ void _spmm_conv_3(const float * __restrict__ input_data, float *output_data, con
 	int output_x = i / (2 * 11);
 	int output_y = i /11 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[11<<1];
 #pragma unroll
@@ -622,7 +619,7 @@ void _spmm_conv_3(const float * __restrict__ input_data, float *output_data, con
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<11; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -695,7 +692,7 @@ void _spmm_conv_3(const float * __restrict__ input_data, float *output_data, con
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<11; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -764,13 +761,12 @@ void _spmm_conv_3(const float * __restrict__ input_data, float *output_data, con
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<11; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -779,7 +775,7 @@ void _spmm_conv_4(const float * __restrict__ input_data, float *output_data, con
 
 
 	int i = (threadIdx.y * 32) + blockIdx.x * (32 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -792,7 +788,7 @@ void _spmm_conv_4(const float * __restrict__ input_data, float *output_data, con
 	int output_x = i / (2 * 64);
 	int output_y = i /64 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[32<<1];
 #pragma unroll
@@ -811,7 +807,7 @@ void _spmm_conv_4(const float * __restrict__ input_data, float *output_data, con
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<32; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -884,7 +880,7 @@ void _spmm_conv_4(const float * __restrict__ input_data, float *output_data, con
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<32; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -953,13 +949,12 @@ void _spmm_conv_4(const float * __restrict__ input_data, float *output_data, con
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<32; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -968,7 +963,7 @@ void _spmm_conv_5(const float * __restrict__ input_data, float *output_data, con
 
 
 	int i = (threadIdx.y * 31) + blockIdx.x * (31 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -981,7 +976,7 @@ void _spmm_conv_5(const float * __restrict__ input_data, float *output_data, con
 	int output_x = i / (2 * 31);
 	int output_y = i /31 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[31<<1];
 #pragma unroll
@@ -1000,7 +995,7 @@ void _spmm_conv_5(const float * __restrict__ input_data, float *output_data, con
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<31; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -1073,7 +1068,7 @@ void _spmm_conv_5(const float * __restrict__ input_data, float *output_data, con
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<31; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -1142,13 +1137,12 @@ void _spmm_conv_5(const float * __restrict__ input_data, float *output_data, con
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<31; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -1157,7 +1151,7 @@ void _spmm_conv_6(const float * __restrict__ input_data, float *output_data, con
 
 
 	int i = (threadIdx.y * 32) + blockIdx.x * (32 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -1170,7 +1164,7 @@ void _spmm_conv_6(const float * __restrict__ input_data, float *output_data, con
 	int output_x = i / (2 * 32);
 	int output_y = i /32 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[32<<1];
 #pragma unroll
@@ -1189,7 +1183,7 @@ void _spmm_conv_6(const float * __restrict__ input_data, float *output_data, con
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<32; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -1262,7 +1256,7 @@ void _spmm_conv_6(const float * __restrict__ input_data, float *output_data, con
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<32; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -1331,13 +1325,12 @@ void _spmm_conv_6(const float * __restrict__ input_data, float *output_data, con
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<32; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -1346,7 +1339,7 @@ void _spmm_conv_7(const float * __restrict__ input_data, float *output_data, con
 
 
 	int i = (threadIdx.y * 19) + blockIdx.x * (19 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -1359,7 +1352,7 @@ void _spmm_conv_7(const float * __restrict__ input_data, float *output_data, con
 	int output_x = i / (2 * 19);
 	int output_y = i /19 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[19<<1];
 #pragma unroll
@@ -1378,7 +1371,7 @@ void _spmm_conv_7(const float * __restrict__ input_data, float *output_data, con
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<19; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -1451,7 +1444,7 @@ void _spmm_conv_7(const float * __restrict__ input_data, float *output_data, con
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<19; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -1520,13 +1513,12 @@ void _spmm_conv_7(const float * __restrict__ input_data, float *output_data, con
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<19; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -1535,7 +1527,7 @@ void _spmm_conv_8(const float * __restrict__ input_data, float *output_data, con
 
 
 	int i = (threadIdx.y * 32) + blockIdx.x * (32 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -1548,7 +1540,7 @@ void _spmm_conv_8(const float * __restrict__ input_data, float *output_data, con
 	int output_x = i / (2 * 32);
 	int output_y = i /32 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[32<<1];
 #pragma unroll
@@ -1567,7 +1559,7 @@ void _spmm_conv_8(const float * __restrict__ input_data, float *output_data, con
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<32; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -1640,7 +1632,7 @@ void _spmm_conv_8(const float * __restrict__ input_data, float *output_data, con
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<32; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -1709,13 +1701,12 @@ void _spmm_conv_8(const float * __restrict__ input_data, float *output_data, con
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<32; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -1724,7 +1715,7 @@ void _spmm_conv_9(const float * __restrict__ input_data, float *output_data, con
 
 
 	int i = (threadIdx.y * 6) + blockIdx.x * (6 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -1737,7 +1728,7 @@ void _spmm_conv_9(const float * __restrict__ input_data, float *output_data, con
 	int output_x = i / (2 * 6);
 	int output_y = i /6 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[6<<1];
 #pragma unroll
@@ -1756,7 +1747,7 @@ void _spmm_conv_9(const float * __restrict__ input_data, float *output_data, con
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<6; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -1829,7 +1820,7 @@ void _spmm_conv_9(const float * __restrict__ input_data, float *output_data, con
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<6; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -1898,13 +1889,12 @@ void _spmm_conv_9(const float * __restrict__ input_data, float *output_data, con
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<6; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -1913,7 +1903,7 @@ void _spmm_conv_10(const float * __restrict__ input_data, float *output_data, co
 
 
 	int i = (threadIdx.y * 32) + blockIdx.x * (32 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -1926,7 +1916,7 @@ void _spmm_conv_10(const float * __restrict__ input_data, float *output_data, co
 	int output_x = i / (2 * 32);
 	int output_y = i /32 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[32<<1];
 #pragma unroll
@@ -1945,7 +1935,7 @@ void _spmm_conv_10(const float * __restrict__ input_data, float *output_data, co
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<32; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -2018,7 +2008,7 @@ void _spmm_conv_10(const float * __restrict__ input_data, float *output_data, co
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<32; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -2087,13 +2077,12 @@ void _spmm_conv_10(const float * __restrict__ input_data, float *output_data, co
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<32; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -2102,7 +2091,7 @@ void _spmm_conv_11(const float * __restrict__ input_data, float *output_data, co
 
 
 	int i = (threadIdx.y * 6) + blockIdx.x * (6 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -2115,7 +2104,7 @@ void _spmm_conv_11(const float * __restrict__ input_data, float *output_data, co
 	int output_x = i / (2 * 6);
 	int output_y = i /6 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[6<<1];
 #pragma unroll
@@ -2134,7 +2123,7 @@ void _spmm_conv_11(const float * __restrict__ input_data, float *output_data, co
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<6; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -2207,7 +2196,7 @@ void _spmm_conv_11(const float * __restrict__ input_data, float *output_data, co
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<6; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -2276,13 +2265,12 @@ void _spmm_conv_11(const float * __restrict__ input_data, float *output_data, co
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<6; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -2291,7 +2279,7 @@ void _spmm_conv_12(const float * __restrict__ input_data, float *output_data, co
 
 
 	int i = (threadIdx.y * 32) + blockIdx.x * (32 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -2304,7 +2292,7 @@ void _spmm_conv_12(const float * __restrict__ input_data, float *output_data, co
 	int output_x = i / (2 * 32);
 	int output_y = i /32 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[32<<1];
 #pragma unroll
@@ -2323,7 +2311,7 @@ void _spmm_conv_12(const float * __restrict__ input_data, float *output_data, co
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<32; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -2396,7 +2384,7 @@ void _spmm_conv_12(const float * __restrict__ input_data, float *output_data, co
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<32; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -2465,13 +2453,12 @@ void _spmm_conv_12(const float * __restrict__ input_data, float *output_data, co
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<32; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -2480,7 +2467,7 @@ void _spmm_conv_13(const float * __restrict__ input_data, float *output_data, co
 
 
 	int i = (threadIdx.y * 6) + blockIdx.x * (6 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -2493,7 +2480,7 @@ void _spmm_conv_13(const float * __restrict__ input_data, float *output_data, co
 	int output_x = i / (2 * 6);
 	int output_y = i /6 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[6<<1];
 #pragma unroll
@@ -2512,7 +2499,7 @@ void _spmm_conv_13(const float * __restrict__ input_data, float *output_data, co
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<6; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -2585,7 +2572,7 @@ void _spmm_conv_13(const float * __restrict__ input_data, float *output_data, co
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<6; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -2654,13 +2641,12 @@ void _spmm_conv_13(const float * __restrict__ input_data, float *output_data, co
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<6; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -2669,7 +2655,7 @@ void _spmm_conv_14(const float * __restrict__ input_data, float *output_data, co
 
 
 	int i = (threadIdx.y * 32) + blockIdx.x * (32 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -2682,7 +2668,7 @@ void _spmm_conv_14(const float * __restrict__ input_data, float *output_data, co
 	int output_x = i / (2 * 32);
 	int output_y = i /32 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[32<<1];
 #pragma unroll
@@ -2701,7 +2687,7 @@ void _spmm_conv_14(const float * __restrict__ input_data, float *output_data, co
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<32; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -2774,7 +2760,7 @@ void _spmm_conv_14(const float * __restrict__ input_data, float *output_data, co
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<32; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -2843,13 +2829,12 @@ void _spmm_conv_14(const float * __restrict__ input_data, float *output_data, co
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<32; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -2858,7 +2843,7 @@ void _spmm_conv_15(const float * __restrict__ input_data, float *output_data, co
 
 
 	int i = (threadIdx.y * 6) + blockIdx.x * (6 << 2);
-	int c = threadIdx.x + blockIdx.y * 16;
+	int c = threadIdx.x + blockIdx.y * 64;
 
 	const int *kernel_ptr = kernel_ptr_all + ptr_start;
 	const int *kernel_map = kernel_map_all + ptr_start;
@@ -2871,7 +2856,7 @@ void _spmm_conv_15(const float * __restrict__ input_data, float *output_data, co
 	int output_x = i / (2 * 6);
 	int output_y = i /6 % 2;
 
-	int x1 = output_x * 1 * 2 * 512 * 32 + output_y * 1 * 512 * 32 + c;
+	int x1 = output_x * 1 * 2 * 512 * 64 + output_y * 1 * 512 * 64 + c;
 
 	float res[6<<1];
 #pragma unroll
@@ -2890,7 +2875,7 @@ void _spmm_conv_15(const float * __restrict__ input_data, float *output_data, co
 		if (((b - start) & 31) == 0) {
 			begin = b;
 			if (threadIdx.x < end - b) {
-				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+b] % 512 * 32;
+				kernel_off = x1 + kernel_offset[threadIdx.x+b] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+b] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+b] % 512 * 64;
 #pragma unroll
 				for (int k=0; k<6; k++) {
 					kernel_value[k] = kernel_data[threadIdx.x+b+length*k];
@@ -2963,7 +2948,7 @@ void _spmm_conv_15(const float * __restrict__ input_data, float *output_data, co
 	if (interm1 < end && ((interm1-start)  & 31) == 0) {
 		begin = interm1;
 		if (threadIdx.x < end - interm1) {
-			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 32 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 32   + kernel_offset[threadIdx.x+interm1] % 512 * 32;
+			kernel_off = x1 + kernel_offset[threadIdx.x+interm1] / (512 * 3)  *2 * 512 * 64 + kernel_offset[threadIdx.x+interm1] / 512 % 3 * 512 * 64   + kernel_offset[threadIdx.x+interm1] % 512 * 64;
 #pragma unroll
 			for (int k=0; k<6; k++) {
 				kernel_value[k] = kernel_data[threadIdx.x+interm1+length*k];
@@ -3032,13 +3017,12 @@ void _spmm_conv_15(const float * __restrict__ input_data, float *output_data, co
 		}
 	}
 
-	int output_idx = (output_x*2*512+output_y*512)*32 + c;
+	int output_idx = (output_x*2*512+output_y*512)*64 + c;
 #pragma unroll
 	for (int k=0; k<6; k++) {
-		output_data[output_idx+kernel_map[kernel_id+k]*32] = res[k<<1];
-		output_data[output_idx+kernel_map[kernel_id+k]*32+32] = res[(k<<1)+1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64] = res[k<<1];
+		output_data[output_idx+kernel_map[kernel_id+k]*64+32] = res[(k<<1)+1];
 	}
-
 } 
 
 
@@ -3082,67 +3066,67 @@ cudaStream_t stream_15;
 	checkCuda(cudaEventRecord(event1, 0));
 
 	cudaStreamCreate(&stream_0);
-dim3 nblocks_0(3, 2);
+dim3 nblocks_0(3, 1);
 dim3 nthreads_0(32, 4);
 _spmm_conv_0<<<nblocks_0, nthreads_0, 0, stream_0>>>(input_data, output_data, 0, 97, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_1);
-dim3 nblocks_1(1, 2);
+dim3 nblocks_1(1, 1);
 dim3 nthreads_1(32, 4);
 _spmm_conv_1<<<nblocks_1, nthreads_1, 0, stream_1>>>(input_data, output_data, 97, 109, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_2);
-dim3 nblocks_2(3, 2);
+dim3 nblocks_2(3, 1);
 dim3 nthreads_2(32, 4);
 _spmm_conv_2<<<nblocks_2, nthreads_2, 0, stream_2>>>(input_data, output_data, 109, 206, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_3);
-dim3 nblocks_3(1, 2);
+dim3 nblocks_3(1, 1);
 dim3 nthreads_3(32, 4);
 _spmm_conv_3<<<nblocks_3, nthreads_3, 0, stream_3>>>(input_data, output_data, 206, 218, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_4);
-dim3 nblocks_4(2, 2);
+dim3 nblocks_4(2, 1);
 dim3 nthreads_4(32, 4);
 _spmm_conv_4<<<nblocks_4, nthreads_4, 0, stream_4>>>(input_data, output_data, 218, 283, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_5);
-dim3 nblocks_5(1, 2);
+dim3 nblocks_5(1, 1);
 dim3 nthreads_5(32, 4);
 _spmm_conv_5<<<nblocks_5, nthreads_5, 0, stream_5>>>(input_data, output_data, 283, 315, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_6);
-dim3 nblocks_6(1, 2);
+dim3 nblocks_6(1, 1);
 dim3 nthreads_6(32, 4);
 _spmm_conv_6<<<nblocks_6, nthreads_6, 0, stream_6>>>(input_data, output_data, 315, 348, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_7);
-dim3 nblocks_7(1, 2);
+dim3 nblocks_7(1, 1);
 dim3 nthreads_7(32, 4);
 _spmm_conv_7<<<nblocks_7, nthreads_7, 0, stream_7>>>(input_data, output_data, 348, 368, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_8);
-dim3 nblocks_8(1, 2);
+dim3 nblocks_8(1, 1);
 dim3 nthreads_8(32, 4);
 _spmm_conv_8<<<nblocks_8, nthreads_8, 0, stream_8>>>(input_data, output_data, 368, 401, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_9);
-dim3 nblocks_9(1, 2);
+dim3 nblocks_9(1, 1);
 dim3 nthreads_9(32, 4);
 _spmm_conv_9<<<nblocks_9, nthreads_9, 0, stream_9>>>(input_data, output_data, 401, 408, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_10);
-dim3 nblocks_10(1, 2);
+dim3 nblocks_10(1, 1);
 dim3 nthreads_10(32, 4);
 _spmm_conv_10<<<nblocks_10, nthreads_10, 0, stream_10>>>(input_data, output_data, 408, 441, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_11);
-dim3 nblocks_11(1, 2);
+dim3 nblocks_11(1, 1);
 dim3 nthreads_11(32, 4);
 _spmm_conv_11<<<nblocks_11, nthreads_11, 0, stream_11>>>(input_data, output_data, 441, 448, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_12);
-dim3 nblocks_12(1, 2);
+dim3 nblocks_12(1, 1);
 dim3 nthreads_12(32, 4);
 _spmm_conv_12<<<nblocks_12, nthreads_12, 0, stream_12>>>(input_data, output_data, 448, 481, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_13);
-dim3 nblocks_13(1, 2);
+dim3 nblocks_13(1, 1);
 dim3 nthreads_13(32, 4);
 _spmm_conv_13<<<nblocks_13, nthreads_13, 0, stream_13>>>(input_data, output_data, 481, 488, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_14);
-dim3 nblocks_14(1, 2);
+dim3 nblocks_14(1, 1);
 dim3 nthreads_14(32, 4);
 _spmm_conv_14<<<nblocks_14, nthreads_14, 0, stream_14>>>(input_data, output_data, 488, 521, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 cudaStreamCreate(&stream_15);
-dim3 nblocks_15(1, 2);
+dim3 nblocks_15(1, 1);
 dim3 nthreads_15(32, 4);
 _spmm_conv_15<<<nblocks_15, nthreads_15, 0, stream_15>>>(input_data, output_data, 521, 528, kernel_ptr, kernel_map, kernel_offset, kernel_data);
 
