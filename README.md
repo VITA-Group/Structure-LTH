@@ -49,7 +49,7 @@ Most of the datasets will be downloaded automatically. To download the Tiny-Imag
 
 ### Checkpoints
 
-The relevant files / checkpoints can be found in [this folder](https://www.dropbox.com/sh/0j9p3hfbmm9wn3r/AABi3hI_2esiw40JsKaX1teka?dl=0).
+The relevant files / checkpoints can be found in [this folder](https://www.dropbox.com/sh/0j9p3hfbmm9wn3r/AABi3hI_2esiw40JsKaX1teka?dl=0) and [this folder] (https://drive.google.com/drive/folders/19PSxCZ_q0eNmdO4AZYqZSNnJPrTErxqg?usp=sharing).
 
 ### Finding Lottery Tickets with IMP (ResNet-18)
 
