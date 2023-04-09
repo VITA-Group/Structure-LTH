@@ -79,6 +79,12 @@ To calculate the time of regroup conv, `cd profile/regroup_conv` and `python spl
 
 To calculate the time of cudnn conv, `cd profile/cudnn_conv` and run `python conv.py --kernel_file <sparse_mask_checkpoint>`.
 
+### Example of end-to-end inference
+
+```bash
+CUDA_VISIBLE_DEVICES=0 python -u end-to-end.py --data datasets/cifar10 --dataset cifar10 --seed 1 --arch vgg16_bn --epoch 160 --lr 0.1 --decreasing_lr 80,120 --save_dir vgg16_bn_cifar10_lt_0.2_rewind_regroup_vgg_time --checkpoint vgg16_bn_cifar10_lt_0.2_rewind_imp/10checkpoint.pth.tar --prune-type lt --reuse
+```
+
 ## Todo
 
 - [] Upgrade codes to support CUDA 11.x.
